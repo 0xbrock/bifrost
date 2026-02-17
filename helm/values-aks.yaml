@@ -1,0 +1,85 @@
+# Bifrost Helm values for AKS deployment
+# Install: helm install bifrost maximhq/bifrost -f helm/values-aks.yaml
+
+replicaCount: 2
+
+image:
+  repository: docker.io/maximhq/bifrost
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+# -- Resources sized for gateway workload
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# -- Health probes
+livenessProbe:
+  httpGet:
+    path: /metrics
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /metrics
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# -- Bifrost application config
+bifrost:
+  port: 8080
+  host: "0.0.0.0"
+  logLevel: info
+  logStyle: json
+  appDir: /app/data
+  storageMode: sqlite
+
+# -- Persistence for SQLite (switch to postgres for production)
+persistence:
+  enabled: true
+  size: 10Gi
+
+# -- Environment variables from Kubernetes Secret
+# Create secret first:
+#   kubectl create secret generic bifrost-secrets \
+#     --from-literal=AZURE_API_KEY=<key> \
+#     --from-literal=AZURE_ENDPOINT=<endpoint> \
+#     --from-literal=AZURE_SERVERLESS_LLAMA_ENDPOINT=<endpoint> \
+#     --from-literal=AZURE_SERVERLESS_LLAMA_KEY=<key> \
+#     --from-literal=AZURE_SERVERLESS_MISTRAL_ENDPOINT=<endpoint> \
+#     --from-literal=AZURE_SERVERLESS_MISTRAL_KEY=<key>
+extraEnvFrom:
+  - secretRef:
+      name: bifrost-secrets
+
+# -- Autoscaling (enable for production traffic)
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# -- Ingress (configure for Azure App Gateway or nginx)
+ingress:
+  enabled: false
+  # className: azure-application-gateway
+  # hosts:
+  #   - host: bifrost.yourdomain.com
+  #     paths:
+  #       - path: /
+  #         pathType: Prefix
+  # tls:
+  #   - secretName: bifrost-tls
+  #     hosts:
+  #       - bifrost.yourdomain.com
