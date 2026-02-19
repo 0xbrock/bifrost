@@ -96,7 +96,7 @@
         {
           "name": "lm-studio-key",
           "value": "env.LM_STUDIO_API_KEY",
-          "models": ["google/gemma-3-4b", "qwen/qwen3-vl-30b", "qwen/qwen3-coder-30b", "text-embedding-embeddinggemma-300m-qat", "text-embedding-nomic-embed-text-v1.5"],
+          "models": ["google/gemma-3-4b", "google/gemma-3-27b", "qwen/qwen3-vl-30b", "qwen/qwen3-coder-30b", "text-embedding-embeddinggemma-300m-qat", "text-embedding-nomic-embed-text-v1.5"],
           "weight": 1.0
         }
       ],
